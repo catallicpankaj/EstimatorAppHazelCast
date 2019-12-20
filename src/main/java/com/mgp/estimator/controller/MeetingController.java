@@ -98,6 +98,21 @@ public class MeetingController {
 		}
 	}
 
+	
+	@PutMapping(value = "update-ticket", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public void updateTicketForUsers(@RequestParam String sessionKey, @RequestParam String uuid,
+			@RequestParam String ticketNumber) throws IOException {
+		logger.info("Updating vote in session Key {} for uuid {} ", sessionKey, uuid);
+		String cacheDataForSessionKey = hazelServiceImpl.readData(INITIATOR_CACHE_NAME, sessionKey);
+		if (cacheDataForSessionKey != null) {
+			Map<String,String> ticketNumberObject = new HashMap<>();
+			ticketNumberObject.put("ticketNumber", ticketNumber);
+			ArrayNode existingCacheData = (ArrayNode) mapper.readTree(cacheDataForSessionKey);
+			existingCacheData.add(mapper.readTree(mapper.writeValueAsString(ticketNumberObject)));
+			hazelServiceImpl.updateData(INITIATOR_CACHE_NAME, sessionKey, mapper.writeValueAsString(existingCacheData));
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	@PutMapping(value = "clear-votes", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public void clearVoteForUsers(@RequestParam String sessionKey) throws IOException {
